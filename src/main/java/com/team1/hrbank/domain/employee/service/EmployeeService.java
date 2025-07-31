@@ -3,26 +3,20 @@ package com.team1.hrbank.domain.employee.service;
 import com.team1.hrbank.domain.department.entity.Department;
 import com.team1.hrbank.domain.department.repository.DepartmentRepository;
 import com.team1.hrbank.domain.employee.dto.EmployeeDto;
-import com.team1.hrbank.domain.employee.dto.request.CursorPageRequestDto;
 import com.team1.hrbank.domain.employee.dto.request.EmployeeUpdateRequestDto;
-import com.team1.hrbank.domain.employee.dto.response.CursorPageResponseEmployeeDto;
 import com.team1.hrbank.domain.employee.entity.Employee;
 import com.team1.hrbank.domain.employee.entity.EmployeeStatus;
 import com.team1.hrbank.domain.employee.mapper.EmployeeMapper;
 import com.team1.hrbank.domain.employee.repository.EmployeeRepository;
 import com.team1.hrbank.domain.employee.dto.request.EmployeeCreateRequestDto;
-import org.springframework.data.domain.Pageable;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class EmployeeService {
 
@@ -81,23 +75,6 @@ public class EmployeeService {
     // TODO employeeUpdateRequestDto.memo() 를 사용해서 수정 로그 남기는것 추가 필요함!!
   }
 
-  public CursorPageResponseEmployeeDto findEmployeesByInfo(
-      CursorPageRequestDto cursorPageRequestDto) {
-
-    List<Employee> employees = employeeRepository.findEmployeesByRequest(cursorPageRequestDto);
-    List<EmployeeDto> employeeDtos = employees.stream()
-        .map(employeeMapper::toEmployeeDto)
-        .toList();
-
-    String nextCursor = null; //프로토 제품 확인해보니 null 값을 받음
-    Long nextIdAfter = null;
-    Integer size = cursorPageRequestDto.getSize() / 2; // 정확한 값은 모르겟는데 프로토 타입은 사이즈를 30씩 넘겨주고 15씩 받음
-    Long totalElements = (long) employees.size();
-    Boolean hasNext = false; // 프로토 타입에서 false를 받음
-
-    return new CursorPageResponseEmployeeDto(employeeDtos, nextCursor, nextIdAfter, size,
-        totalElements, hasNext);
-  }
 
   private String createEmployeeNumber() {
     String prefix = "EMP"; // 직원
@@ -129,7 +106,11 @@ public class EmployeeService {
   }
 
   private Employee getValidateEmployee(long employeeId) {
-    return employeeRepository.findById(employeeId)
-        .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+    Optional<Employee> employee = employeeRepository.findById(employeeId);
+    if (employee.isEmpty()) {
+      throw new IllegalArgumentException("Employee not found");
+    }
+    return employee.get();
   }
+
 }
