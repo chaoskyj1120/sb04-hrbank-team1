@@ -97,7 +97,7 @@ public class EmployeeController {
         .body(employeesCount);
   }
 
-  @GetMapping("/status/trend")
+  @GetMapping("/stats/trend")
   public ResponseEntity<List<EmployeeTrendDto>> statusTrendEmployees(
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate to,
@@ -111,7 +111,7 @@ public class EmployeeController {
         .body(trend);
   }
 
-  @GetMapping("/status/distribution")
+  @GetMapping("/stats/distribution")
   public ResponseEntity<List<EmployeeDistributionDto>> statusDistributionEmployees(
       @RequestParam(required = false, defaultValue = "department") String groupBy,
       @RequestParam(required = false, defaultValue = "ACTIVE") EmployeeStatus status
